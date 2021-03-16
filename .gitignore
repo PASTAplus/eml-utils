@@ -1,3 +1,10 @@
+# Intermediate files holding EML aggregations
+*.pickle
+
+# The default root for local copy of EML docs
+__all_eml/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
