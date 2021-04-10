@@ -17,13 +17,13 @@ import sys
 
 import lxml.etree
 
-import _lib
+import lib
 
 log = logging.getLogger(__name__)
 
 
 def main():
-    parser = _lib.ArgumentParser(
+    parser = lib.ArgumentParser(
         description=__doc__,
     )
     parser.add_argument(
@@ -57,9 +57,9 @@ def main():
 
     try:
         proc(args.xpath, pathlib.Path(args.eml_path), args.only_text)
-    except _lib.EMLError as e:
+    except lib.EMLError as e:
         log.error(str(e))
-        _lib.plog(e.xml_frag, 'EML fragment', log.error)
+        lib.plog(e.xml_frag, 'EML fragment', log.error)
     except Exception:
         log.exception('Unhandled exception')
 
@@ -70,7 +70,7 @@ def proc(xpath_str, eml_path, only_text):
     log.debug('-' * 100)
     log.debug(eml_path)
 
-    root_el = _lib.get_eml_tree(eml_path)
+    root_el = lib.get_eml_tree(eml_path)
     el_list = root_el.xpath(xpath_str)
 
     for el in el_list:
@@ -79,9 +79,9 @@ def proc(xpath_str, eml_path, only_text):
                 text_str = (getattr(el, 'text', '') or '').strip()
                 if (not only_text) or text_str:
                     tree = lxml.etree.ElementTree(root_el.getroot())
-                    log.info(f'{tree.getelementpath(el)}: {text_str}')
+                    log.debug(f'{tree.getelementpath(el)}: {text_str}')
         else:
-            log.info(el)
+            log.debug(el)
 
 
 if __name__ == '__main__':

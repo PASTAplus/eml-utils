@@ -14,17 +14,18 @@ import pathlib
 import pickle
 import sys
 
-import _lib
+import lib
 
 log = logging.getLogger(__name__)
 
 DEFAULT_MIN_OCCURENCES = 0  # 10
 DEFAULT_MIN_VALUES = 0  # 3
 DEFAULT_MAX_LENGTH = 100  # 20
+DEFAULT_TOP_VALUES = 100
 
 
 def main():
-    parser = _lib.ArgumentParser(
+    parser = lib.ArgumentParser(
         description=__doc__,
     )
     parser.add_argument(
@@ -50,6 +51,12 @@ def main():
         help='Only print values that are shorter than this',
     )
     parser.add_argument(
+        '--top',
+        type=int,
+        default=DEFAULT_TOP_VALUES,
+        help='Only print the top N values for each element',
+    )
+    parser.add_argument(
         '--debug',
         action='store_true',
         help='Debug level logging',
@@ -65,10 +72,10 @@ def main():
     pickle_path = pathlib.Path(args.pickle)
     stats_dict = pickle.loads(pickle_path.read_bytes())
 
-    _lib.plog(
+    lib.plog(
         stats_dict.get('__args', 'unk'),
         'Stats were genereated with params',
-        log.info,
+        log.debug,
     )
 
     try:
@@ -76,15 +83,16 @@ def main():
     except KeyError:
         pass
 
-    _lib.plog(stats_dict.keys(), 'Keys in stats dict', log.info)
+    lib.plog(stats_dict.keys(), 'Keys in stats dict', log.debug)
 
-    # pprint.pprint(stats_dict)
+    # plog(stats_dict)
 
     def k(x):
         # print(x)
         return -x[1]
 
     for el_path, tag_dict in stats_dict.items():
+        printed_count = 0
         if len(tag_dict) >= args.values:
             first = True
             for text_str, value_count in sorted(
@@ -92,12 +100,14 @@ def main():
             ):
                 if value_count >= args.occurences and len(text_str) <= args.length:
                     if first:
-                        log.info('')
-                        log.info(f'{tag_dict["tag_count"]:8} {el_path}::')
+                        log.debug('')
+                        log.debug(f'{tag_dict["tag_count"]:8} {el_path}:')
                         first = False
 
-                    log.info(f'    {value_count:8} {text_str}')
-
+                    log.debug(f'    {value_count:8} {text_str}')
+                    printed_count += 1
+                    if args.top > 0 and args.top == printed_count:
+                        break
     return 0
 
 

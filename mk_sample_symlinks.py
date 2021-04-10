@@ -20,7 +20,7 @@ import pathlib
 import random
 import sys
 
-import _lib
+import lib
 
 THIS_PATH = pathlib.Path(__file__).parent.resolve()
 DEFAULT_SAMPLE_COUNT = 100
@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 
 
 def main():
-    parser = _lib.ArgumentParser(
+    parser = lib.ArgumentParser(
         description=__doc__,
     )
     parser.add_argument(
@@ -44,7 +44,7 @@ def main():
         '--eml-root',
         metavar='path',
         type=pathlib.Path,
-        default=_lib.DEFAULT_EML_ROOT_DIR,
+        default=lib.DEFAULT_EML_ROOT_DIR,
         help="""Path to root of directory tree to search for EML docs 
             (extension must be \'.xml\')
         """,
@@ -71,8 +71,8 @@ def main():
     if not args.sample_root.exists():
         args.sample_root.mkdir(parents=True)
 
-    path_list = list(_lib.eml_path_gen(args.eml_root))
-    log.info(f'All count: {len(path_list)}')
+    path_list = list(lib.eml_path_gen(args.eml_root))
+    log.debug(f'All count: {len(path_list)}')
     sample_list = random.sample(path_list, args.sample_count)
     for src_path in sample_list:
         dst_path = args.sample_root / src_path.name
@@ -80,7 +80,7 @@ def main():
         if args.sample_root.is_relative_to(args.eml_root):
             dst_path = dst_path.relative_to(src_path)
 
-        log.info(f'{dst_path} -> {src_path}')
+        log.debug(f'{dst_path} -> {src_path}')
 
         try:
             os.symlink(src_path, dst_path)

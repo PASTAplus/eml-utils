@@ -8,7 +8,7 @@ import subprocess
 import logging
 import sys
 
-import _lib
+import lib
 
 STAT_TUP = (
     ('stats-datatable-only.pickle', './/dataTable'),
@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 def main():
-    parser = _lib.ArgumentParser(
+    parser = lib.ArgumentParser(
         description=__doc__,
     )
     parser.parse_args()

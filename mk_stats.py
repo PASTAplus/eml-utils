@@ -19,7 +19,7 @@ import pickle
 import sys
 import time
 
-import _lib
+import lib
 
 THIS_PATH = pathlib.Path(__file__).parent.resolve()
 
@@ -27,14 +27,14 @@ log = logging.getLogger(__name__)
 
 
 def main():
-    parser = _lib.ArgumentParser(
+    parser = lib.ArgumentParser(
         description=__doc__,
     )
     parser.add_argument(
         '--eml-root',
         metavar='path',
         type=pathlib.Path,
-        default=_lib.DEFAULT_EML_ROOT_DIR,
+        default=lib.DEFAULT_EML_ROOT_DIR,
         help="""Path to root of directory tree to search for EML docs 
             (extension must be \'.xml\')
         """,
@@ -66,19 +66,19 @@ def main():
 
     try:
         result_dict = proc_all(args.eml_root, args.xpath)
-    except _lib.EMLError as e:
+    except lib.EMLError as e:
         log.error(str(e))
-        _lib.plog(e.xml_frag, 'EML fragment', log.error)
+        lib.plog(e.xml_frag, 'EML fragment', log.error)
     except Exception:
         log.exception('Unhandled exception')
     else:
         pickle_path = pathlib.Path(args.pickle).with_suffix('.pickle')
         result_dict['__args'] = vars(args)
         pickle_path.write_bytes(pickle.dumps(result_dict))
-        log.info(f'Wrote statistics to {pickle_path.as_posix()}')
+        log.debug(f'Wrote statistics to {pickle_path.as_posix()}')
 
         m, s = divmod(time.time() - start_ts, 60)
-        log.info(f'Elapsed: {int(m)}m {int(s)}s')
+        log.debug(f'Elapsed: {int(m)}m {int(s)}s')
 
     return 0
 
@@ -86,7 +86,7 @@ def main():
 def proc_all(eml_root_path, root_xpath):
     dst_el_dict = {}
 
-    for eml_path in _lib.eml_path_gen(eml_root_path):
+    for eml_path in lib.eml_path_gen(eml_root_path):
         proc_eml(eml_path, root_xpath, dst_el_dict)
         # shared.merge_dict_set(dst_el_dict, el_dict)
 
@@ -97,8 +97,8 @@ def proc_eml(eml_path, root_xpath, dst_el_dict):
     log.debug('-' * 100)
     log.debug(eml_path)
 
-    root_el = _lib.get_eml_tree(eml_path)
-    el_list = _lib.xpath(root_el, root_xpath, full_path=True)
+    root_el = lib.get_eml_tree(eml_path)
+    el_list = lib.xpath(root_el, root_xpath, full_path=True)
 
     for el, el_path in el_list:
         text = (getattr(el, 'text', '') or '').strip()
